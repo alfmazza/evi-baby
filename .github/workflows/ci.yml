@@ -57,6 +57,7 @@ jobs:
 
       - name: Write kubeconfig (TEST)
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG_TEST_B64 }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
