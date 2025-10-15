@@ -44,3 +44,19 @@ jobs:
         run: |
           docker push $REGISTRY/$IMAGE_NAME:${{ github.sha }}
           docker push $REGISTRY/$IMAGE_NAME:latest
+          
+  deploy-test:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write kubeconfig (TEST)
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_TEST_B64 }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+      - name: Set image & rollout (TEST)
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/myapp:${{ github.sha }}
+        run: |
+          kubectl -n test set image deployment/myapp myapp=$IMAGE --record
+          kubectl -n test rollout status deployment/myapp --timeout=180s
