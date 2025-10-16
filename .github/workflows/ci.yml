@@ -48,18 +48,17 @@ jobs:
   deploy-test:
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'latest'
+      - name: Export KUBECONFIG for this job
+        run: echo "KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> $GITHUB_ENV
 
-      - name: Write kubeconfig (TEST)
+      - name: Sanity check kubectl (runner local)
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG_TEST_B64 }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          which kubectl || echo "kubectl no está en PATH"
+          kubectl version --client=true
+          kubectl get nodes -o wide
+          kubectl -n test get deploy,po
 
       - name: Set image & rollout (TEST)
         env:
