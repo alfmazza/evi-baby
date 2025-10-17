@@ -51,7 +51,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Export KUBECONFIG for this job
-        run: echo "KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> $GITHUB_ENV
+        run: echo "KUBECONFIG=/etc/kubectl/config" >> $GITHUB_ENV
 
       - name: Sanity check kubectl (runner local)
         run: |
@@ -64,5 +64,5 @@ jobs:
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         run: |
-          kubectl -n test set image deployment/myapp myapp=$IMAGE --record
+          kubectl -n test set image deployment/myapp myapp=$IMAGE
           kubectl -n test rollout status deployment/myapp --timeout=180s
